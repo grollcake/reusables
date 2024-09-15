@@ -116,5 +116,67 @@ if ! shopt -oq posix; then
   fi
 fi
 
+############################################################################
+# 여기부터는 별도로 추가한 옵션입니다.
+############################################################################
+create-user() {
+    # sudo 권한 확인
+    if ! sudo -n true 2>/dev/null; then
+        echo "이 함수는 sudo 권한이 필요합니다. sudo 권한이 있는지 확인하세요."
+        return 1
+    fi
+
+    # 사용자 이름 입력 받기
+    read -p "새 사용자 이름을 입력하세요: " username
+
+    # 사용자 이름이 비어있는지 확인
+    if [[ -z "$username" ]]; then
+        echo "사용자 이름이 비어 있습니다."
+        return 1
+    fi
+
+    # 패스워드 입력 받기 (입력 시 화면에 표시되지 않음)
+    read -s -p "패스워드를 입력하세요: " password
+    echo
+    read -s -p "패스워드를 다시 입력하세요: " password_confirm
+    echo
+
+    # 패스워드 일치 여부 확인
+    if [[ "$password" != "$password_confirm" ]]; then
+        echo "패스워드가 일치하지 않습니다."
+        return 1
+    fi
+
+    # 사용자 생성 (비대화식으로)
+    sudo adduser --disabled-password --gecos "" "$username"
+    if [[ $? -ne 0 ]]; then
+        echo "사용자 생성에 실패했습니다."
+        return 1
+    fi
+
+    # 패스워드 설정
+    echo "$username:$password" | sudo chpasswd
+    if [[ $? -ne 0 ]]; then
+        echo "패스워드 설정에 실패했습니다."
+        return 1
+    fi
+
+    # sudoers 파일에 패스워드 없이 sudo 권한 부여
+    sudo bash -c "echo '$username ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/$username"
+    if [[ $? -ne 0 ]]; then
+        echo "sudoers 파일 설정에 실패했습니다."
+        return 1
+    fi
+
+    # sudoers 파일 권한 설정
+    sudo chmod 0440 /etc/sudoers.d/"$username"
+    if [[ $? -ne 0 ]]; then
+        echo "sudoers 파일 권한 설정에 실패했습니다."
+        return 1
+    fi
+
+    echo "사용자 '$username'이(가) 성공적으로 생성되었으며, 패스워드 없이 sudo 권한이 부여되었습니다."
+}
+
 # tabby에서 sftp 기능 이용 시 현재 디랙토리를 인식하도록 하는 설정
 export PS1="$PS1\[\e]1337;CurrentDir="'$(pwd)\a\]'
