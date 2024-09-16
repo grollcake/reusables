@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# 스크립트가 sudo 또는 루트 권한으로 실행되었는지 확인
-if [ "$EUID" -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ]; then
     echo "이 스크립트는 sudo 권한 없이 실행해야 합니다."
     exit 1
 fi
