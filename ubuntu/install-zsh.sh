@@ -33,6 +33,6 @@ git clone https://github.com/agkozak/zsh-z ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/pl
 
 # .zshrc 파일에 플러그인 추가
 echo "플러그인을 .zshrc에 추가하는 중..."
-sed -i 's/plugins=(git)/plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf zsh-z )/' ~/.zshrc
+sed -i '/^plugins=/c\plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf zsh-z )' ~/.zshrc
 
 echo "zsh와 oh-my-zsh 설치를 완료했습니다. 터미널을 재시작하거나 'zsh' 명령어를 실행하세요."
